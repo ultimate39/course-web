@@ -12,7 +12,6 @@ class UsersController < ApplicationController
   # GET /users/1.json
   def show
     if @user
-      format.html { redirect_to api_user_path(@user), notice: 'User was successfully created.' }
       format.json { render :show, status: :created, location: @user }
     else
       format.html { render html: @user.errors, status: 404 }
