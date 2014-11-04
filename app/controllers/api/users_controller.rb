@@ -11,12 +11,14 @@ class UsersController < ApplicationController
   # GET /users/1
   # GET /users/1.json
   def show
+    respond_to do |format|
     if @user
-      format.json { render :show, status: :created, location: @user }
+      format.json { render :show, status: :created, location: api_user_path(@user) }
     else
       format.html { render html: @user.errors, status: 404 }
       format.json { render json: @user.errors, status: :unprocessable_entity }
     end
+   end
   end
 
   # GET /users/new
