@@ -1,6 +1,6 @@
 module API
 class UsersController < ApplicationController
-  before_action :set_user,  only: [:show, :edit, :update, :destroy]
+  before_action :set_user,  only: [:show]
   before_action :authenticate,  only: [:edit, :update, :destroy]
   # GET /users
   # GET /users.json 
@@ -13,10 +13,11 @@ class UsersController < ApplicationController
   def show
     respond_to do |format|
     if @user
-      format.json { render :show, status: :created, location: api_user_path(@user) }
+      format.json { render :show, status: :ok, location: api_user_path(@user) }
+      format.html { render :show, status: :ok, location: api_user_path(@user) }
     else
-      format.html { render html: @user.errors, status: 404 }
-      format.json { render json: @user.errors, status: :unprocessable_entity }
+      format.html { render json: @user.errors, status: 404 }
+      format.json { render json: @user.errors, status: 404 }
     end
    end
   end
@@ -34,16 +35,11 @@ class UsersController < ApplicationController
   # POST /users.json
   def create
     @user = User.new(user_params)
-
-    respond_to do |format|
       if @user.save
-        format.html { redirect_to api_user_path(@user), notice: 'User was successfully created.' }
-        format.json { render :show, status: :created, location: @user }
+        render json: @user, status: :created
       else
-        format.html { render :new }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        render json: @user.errors, status: :unprocessable_entity 
       end
-    end
   end
 
   # PATCH/PUT /users/1
@@ -51,10 +47,10 @@ class UsersController < ApplicationController
   def update
     respond_to do |format|
       if @user.update(user_params)
-        format.html { redirect_to api_user_path(@user), notice: 'User was successfully updated.' }
-        format.json { render :show, status: :ok, location: @user }
+        format.html { render :show, status: :ok, location: api_user_path(@user) }
+        format.json { render :show, status: :ok, location: api_user_path(@user) }
       else
-        format.html { render :edit }
+        format.html { render json: @user.errors, status: :unprocessable_entity }
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
@@ -65,7 +61,7 @@ class UsersController < ApplicationController
   def destroy
     @user.destroy
     respond_to do |format|
-      format.html { redirect_to api_users_url, notice: 'User was successfully destroyed.' }
+      format.html { head :no_content }
       format.json { head :no_content }
     end
   end
@@ -88,7 +84,7 @@ class UsersController < ApplicationController
     def render_unauthorized  
      self.headers['WWW-Authenticate'] = 'Basic realm="Users"' 
       respond_to do |format|  
-       format.json { render json: 'Bad credentials', status: 401 } 
+       format.json { render json: '{ "error":"bad credentials" }', status: 401 } 
        format.xml { render xml: 'Bad credentials', status: 401 }
        format.html { render html: 'Bad credentials', status: 401} 
       end 
@@ -96,7 +92,8 @@ class UsersController < ApplicationController
 
     def authenticate_basic_auth  
       authenticate_with_http_basic do |username, password| 
-       User.authenticate(username, password)
+       @user = User.authenticate(username, password)
+       @user && @user.id.to_s == params[:id].to_s
       end
     end  
 end
